@@ -17,9 +17,6 @@ def memberArgs() -> Namespace:
     parser.add_argument(
         "-v",
         "--version",
-        required=False,
-        type=bool,
-        default=False,
         action="version",
         version=f"{version()}",
         help="Display the version",

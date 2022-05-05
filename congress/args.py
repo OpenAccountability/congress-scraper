@@ -1,4 +1,5 @@
 from argparse import ArgumentParser, Namespace
+
 from congress.version import version
 
 authors: list = ["Nicholas M. Synovic"]
@@ -20,7 +21,7 @@ def memberArgs() -> Namespace:
         type=bool,
         default=False,
         action="version",
-        version=f"{version()}"
+        version=f"{version()}",
         help="Display the version",
     )
 

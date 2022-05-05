@@ -61,6 +61,8 @@ setup(
     python_requires=">=3.10",
     install_requires=[
         "bs4",
+        "lxml",
+        "pandas",
         "requests",
         # "matplotlib",
         # "numpy",

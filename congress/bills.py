@@ -39,6 +39,7 @@ def extractBills(dataset: ResultSet, sponsorKey: str) -> DataFrame:
     data: dict = {
         "Bill": [],
         "Congress Session": [],
+        "Chamber": [],
         "Sponsor Key": [],
         "Bill URL": [],
         "Cosponsor URL": [],
@@ -60,6 +61,11 @@ def extractBills(dataset: ResultSet, sponsorKey: str) -> DataFrame:
             "https://congress.gov" + uriHREF.split("?")[0] + "/cosponsor"
         )  # TODO: Make this more concise
         data["Bill"].append(uri.text)
+
+        if uri.text[0] == "S":
+            data["Chamber"].append("Senate")
+        else:
+            data["Chamber"].append("House")
 
     return DataFrame(data)
 

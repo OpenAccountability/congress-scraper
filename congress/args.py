@@ -17,10 +17,10 @@ def memberArgs() -> Namespace:
     parser.add_argument(
         "-o",
         "--output",
-        default="members.json",
+        default="members.csv",
         type=str,
         required=False,
-        help="Save the output to disk. DEFAULT: members.json",
+        help="Save the output to disk. DEFAULT: members.csv",
     )
 
     parser.add_argument(
@@ -45,19 +45,19 @@ def billsArgs() -> Namespace:
     parser.add_argument(
         "-i",
         "--input",
-        default="members.json",
+        default="members.csv",
         type=str,
         required=False,
-        help="File containing member URLs in JSON format. DEFAULT: members.json",
+        help="File containing member URLs in JSON format. DEFAULT: members.csv",
     )
 
     parser.add_argument(
         "-o",
         "--output",
-        default="bills.json",
+        default="bills.csv",
         type=str,
         required=False,
-        help="Save the output to disk. DEFAULT: bills.json",
+        help="Save the output to disk. DEFAULT: bills.csv",
     )
 
     parser.add_argument(

@@ -111,4 +111,4 @@ def main() -> None:
             bar.next()
 
     df: DataFrame = pandas.concat(dfList, ignore_index=True)
-    df.T.to_json(args.output)
+    df.T.to_csv(args.output)

@@ -76,7 +76,7 @@ def main() -> None:
 
     searchURL: str = "https://www.congress.gov/quick-search/legislation?wordsPhrases=&wordVariants=on&congressGroups%5B%5D=0&congressGroups%5B%5D=1&congresses%5B%5D=all&legislationNumbers=&legislativeAction=&sponsor=on&representative={}&senator={}"
 
-    memberDF: DataFrame = pandas.read_json(args.input).T
+    memberDF: DataFrame = pandas.read_csv(args.input).T
 
     with Bar(
         "Scraping legislature data from https://congress.gov...", max=memberDF.shape[0]
@@ -102,4 +102,4 @@ def main() -> None:
             bar.next()
 
     df: DataFrame = pandas.concat(dfList, ignore_index=True)
-    df.T.to_json(args.output)
+    df.T.to_csv(args.output)

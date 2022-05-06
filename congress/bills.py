@@ -50,7 +50,10 @@ def extractBills(dataset: ResultSet, sponsorKey: str) -> DataFrame:
         resultHeading: Tag = tag.findChild(
             name="span", attrs={"class": "result-heading"}
         )
-        congressSession: str = int(findall("\d+", resultHeading.text.split('—')[1].strip().split(' ')[0])[0]) # TODO: Make this more concise
+        congressSession: str = int(
+            findall("\d+", resultHeading.text.split("—")
+                    [1].strip().split(" ")[0])[0]
+        )  # TODO: Make this more concise
         data["Congress Session"].append(congressSession)
 
         uri: Tag = resultHeading.findChild("a")

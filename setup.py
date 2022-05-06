@@ -63,6 +63,7 @@ setup(
         "bs4",
         "lxml",
         "pandas",
+        "progress",
         "requests",
         # "matplotlib",
         # "numpy",

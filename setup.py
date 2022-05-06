@@ -75,6 +75,7 @@ setup(
     entry_points={
         "console_scripts": [
             "cs-members = congress.members:main",
+            "cs-bills = congress.bills:main",
         ]
     },
 )

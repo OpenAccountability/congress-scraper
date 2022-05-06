@@ -1,7 +1,5 @@
 from argparse import Namespace
 from re import findall
-from signal import pause
-from types import NoneType
 
 import pandas
 from bs4 import BeautifulSoup
@@ -35,12 +33,22 @@ def getElements(soup: BeautifulSoup) -> ResultSet:
 
 
 def extractMembers(dataset: ResultSet) -> DataFrame:
-    data: dict = {"Last Name": [], "First Name": [], "Senator": [], "Representative": [], "URL": [],}
+    data: dict = {
+        "Last Name": [],
+        "First Name": [],
+        "Senator": [],
+        "Representative": [],
+        "URL": [],
+    }
 
     tag: Tag
     for tag in dataset:
-        resultHeading: Tag = tag.findChild(name="span", attrs={"class": "result-heading"})
-        memberServed: Tag = tag.findChild(name="ul", attrs={"class": "member-served"}, recursive=True)
+        resultHeading: Tag = tag.findChild(
+            name="span", attrs={"class": "result-heading"}
+        )
+        memberServed: Tag = tag.findChild(
+            name="ul", attrs={"class": "member-served"}, recursive=True
+        )
 
         heading: str = resultHeading.text
         heading.replace(",", "")
@@ -49,7 +57,9 @@ def extractMembers(dataset: ResultSet) -> DataFrame:
         data["Last Name"].append(splitHeading[1])
         data["First Name"].append(splitHeading[2])
 
-        data["URL"].append("https://congress.gov" + resultHeading.findChild("a").get("href"))
+        data["URL"].append(
+            "https://congress.gov" + resultHeading.findChild("a").get("href")
+        )
 
         if len(memberServed.find_all()) == 2:
             data["Senator"] = True

@@ -15,6 +15,15 @@ def memberArgs() -> Namespace:
     )
 
     parser.add_argument(
+        "-o",
+        "--output",
+        default="members.json",
+        type=str,
+        required=False,
+        help="Save the output to disk. DEFAULT: members.json"
+    )
+
+    parser.add_argument(
         "-v",
         "--version",
         action="version",

@@ -1,5 +1,4 @@
 from argparse import Namespace
-from distutils.command.build import build
 from re import findall
 
 import pandas
@@ -68,20 +67,21 @@ def main() -> None:
         bar.max = pageCount
         bar.update()
 
+        data: ResultSet = getElements(soup)
+        dfList.append(extractMembers(dataset=data))
+        bar.next()
+
         page: int
-        for page in range(1, pageCount + 1):
-            if page == 1:
-                data: ResultSet = getElements(soup)
-                dfList.append(extractMembers(dataset=data))
-            else:
-                url = (
-                    "https://www.congress.gov/search?q={%22source%22:%22members%22}&pageSize=250&page="
-                    + str(page)
-                )
-                resp: Response = getRequest(url)
-                soup: BeautifulSoup = buildSoup(resp)
-                data: ResultSet = getElements(soup)
-                dfList.append(extractMembers(dataset=data))
+        for page in range(2, pageCount + 1):
+            url = (
+                "https://www.congress.gov/search?q={%22source%22:%22members%22}&pageSize=250&page="
+                + str(page)
+            )
+            resp: Response = getRequest(url)
+            soup: BeautifulSoup = buildSoup(resp)
+            data: ResultSet = getElements(soup)
+            dfList.append(extractMembers(dataset=data))
             bar.next()
 
-    # pandas.concat(dfList).to_json("test.json")
+    df: DataFrame = pandas.concat(dfList, ignore_index=True)
+    df.T.to_json(args.output)

@@ -20,7 +20,7 @@ def memberArgs() -> Namespace:
         default="members.json",
         type=str,
         required=False,
-        help="Save the output to disk. DEFAULT: members.json"
+        help="Save the output to disk. DEFAULT: members.json",
     )
 
     parser.add_argument(

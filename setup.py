@@ -76,6 +76,7 @@ setup(
         "console_scripts": [
             "cs-members = congress.members:main",
             "cs-bills = congress.bills:main",
+            "cb-merge = congress.merge:main",
         ]
     },
 )

@@ -83,7 +83,7 @@ def main() -> None:
         "https://www.congress.gov/search?q={%22source%22:%22members%22}&pageSize=250"
     )
 
-    with Bar("Scraping data from https://congress.gov... ") as bar:
+    with Bar("Scraping Congress member data from https://congress.gov... ") as bar:
 
         resp: Response = getRequest(url)
         soup: BeautifulSoup = buildSoup(resp)

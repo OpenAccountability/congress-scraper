@@ -9,7 +9,8 @@ from progress.bar import Bar
 from requests import get
 from requests.models import Response
 
-from congress.args import memberArgs
+from congress.args import billsArgs
+
 
 def getRequest(url: str) -> Response:
     return get(url)
@@ -21,9 +22,12 @@ def buildSoup(resp: Response) -> BeautifulSoup:
 
 def getPageCount(soup: BeautifulSoup) -> int:
     pagination: Tag = soup.find(name="div", attrs={"class": "pagination"})
-    pageCountText: str = pagination.findChild(
+    try:
+        pageCountText: str = pagination.findChild(
         name="span", attrs={"class": "results-number"}
     ).text
+    except AttributeError:
+        return 0
     return int(findall("\d+", pageCountText)[0])
 
 
@@ -31,64 +35,30 @@ def getElements(soup: BeautifulSoup) -> ResultSet:
     return soup.find_all(name="li", attrs={"class": "expanded"})
 
 
-def _extractCommittee(committeeStr: str)    ->  tuple:
-    splitCommittee: list = committeeStr.split("|")
-    return ()
-
-def extractMembers(dataset: ResultSet) -> DataFrame:
-    data: dict = {"Bill Code": [], "Title": [], "Committees": [], "URL": []}
-
-    tag: Tag
-    for tag in dataset:
-        elementHeading: Tag = tag.findChild(name="span", attrs={"class": "result-heading"})
-        elementTitle: Tag = tag.findChild(name="span", attrs={"class": "result-title"})
-
-        heading: str = elementHeading.text
-        splitHeading: list = heading.split(" ")
-
-        title: str = elementTitle.text
-
-        data["Bill Code"].append(splitHeading[0])
-        data["URL"].append("https://congress.gov" + elementHeading.findChild("a").get("href"))
-
-        data["Title"].append(title)
-        data["First Name"].append(splitTitle[2])
-
-    return DataFrame(data)
-
-
 def main() -> None:
-    args: Namespace = memberArgs()
-
+    args: Namespace = billsArgs()
     dfList: list = []
-    url: str = (
-        "https://www.congress.gov/search?q={%22source%22:%22members%22}&pageSize=250"
-    )
 
-    with Bar("Scraping data from https://congress.gov... ") as bar:
+    searchURL: str = "https://www.congress.gov/quick-search/legislation?wordsPhrases=&wordVariants=on&congressGroups%5B%5D=0&congressGroups%5B%5D=1&congresses%5B%5D=all&legislationNumbers=&legislativeAction=&sponsor=on&representative={}&senator={}"
 
-        resp: Response = getRequest(url)
-        soup: BeautifulSoup = buildSoup(resp)
-        pageCount: int = getPageCount(soup)
+    memberDF: DataFrame = pandas.read_json(args.input).T
 
-        bar.max = pageCount
-        bar.update()
+    with Bar("Scraping legislature data from https://congress.gov...", max=memberDF.shape[0]) as bar:
 
-        data: ResultSet = getElements(soup)
-        dfList.append(extractMembers(dataset=data))
-        bar.next()
+        for row in memberDF.itertuples(index=False):
+            url: str = ""
+            if row.Senator and row.Representative:
+                url = searchURL.format(row.Key, row.Key)
+            elif row.Senator:
+                url = searchURL.format("", row.Key)
+            elif row.Representative:
+                url = searchURL.format(row.Key, "")
+            else:
+                url = searchURL.format("", "")
 
-        page: int
-        for page in range(2, pageCount + 1):
-            url = (
-                "https://www.congress.gov/search?q={%22source%22:%22members%22}&pageSize=250&page="
-                + str(page)
-            )
             resp: Response = getRequest(url)
             soup: BeautifulSoup = buildSoup(resp)
-            data: ResultSet = getElements(soup)
-            dfList.append(extractMembers(dataset=data))
-            bar.next()
+            pageCount: int = getPageCount(soup)
 
-    df: DataFrame = pandas.concat(dfList, ignore_index=True)
-    df.T.to_json(args.output)
+            print(pageCount)
+            bar.next()

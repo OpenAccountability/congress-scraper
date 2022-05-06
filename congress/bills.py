@@ -86,8 +86,6 @@ def main() -> None:
             data: ResultSet = getElements(soup)
             dfList.append(extractBills(dataset=data, sponsorKey=row.Key))
 
-            bar.next()
-
             page: int
             for page in range(2, pageCount + 1):
                 url = searchURL.format(row.Key, row.Key) + f"&page={page}"

@@ -62,15 +62,15 @@ def extractMembers(dataset: ResultSet) -> DataFrame:
         )
 
         if len(memberServed.find_all()) == 2:
-            data["Senator"] = True
-            data["Representative"] = True
+            data["Senator"].append(True)
+            data["Representative"].append(True)
         else:
             if memberServed.findChild(name="li").text[0] == "S":
-                data["Senator"] = True
-                data["Representative"] = False
+                data["Senator"].append(True)
+                data["Representative"].append(False)
             else:
-                data["Senator"] = False
-                data["Representative"] = True
+                data["Senator"].append(False)
+                data["Representative"].append(True)
 
     return DataFrame(data)
 

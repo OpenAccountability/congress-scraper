@@ -1,5 +1,7 @@
 from argparse import Namespace
 from re import findall
+from signal import pause
+from types import NoneType
 
 import pandas
 from bs4 import BeautifulSoup
@@ -33,19 +35,32 @@ def getElements(soup: BeautifulSoup) -> ResultSet:
 
 
 def extractMembers(dataset: ResultSet) -> DataFrame:
-    data: dict = {"Last Name": [], "First Name": [], "URL": []}
+    data: dict = {"Last Name": [], "First Name": [], "Senator": [], "Representative": [], "URL": [],}
 
     tag: Tag
     for tag in dataset:
-        element: Tag = tag.findChild(name="span", attrs={"class": "result-heading"})
+        resultHeading: Tag = tag.findChild(name="span", attrs={"class": "result-heading"})
+        memberServed: Tag = tag.findChild(name="ul", attrs={"class": "member-served"}, recursive=True)
 
-        title: str = element.text
-        title.replace(",", "")
-        splitTitle: list = title.split(" ")
+        heading: str = resultHeading.text
+        heading.replace(",", "")
+        splitHeading: list = heading.split(" ")
 
-        data["Last Name"].append(splitTitle[1])
-        data["First Name"].append(splitTitle[2])
-        data["URL"].append("https://congress.gov" + element.findChild("a").get("href"))
+        data["Last Name"].append(splitHeading[1])
+        data["First Name"].append(splitHeading[2])
+
+        data["URL"].append("https://congress.gov" + resultHeading.findChild("a").get("href"))
+
+        if len(memberServed.find_all()) == 2:
+            data["Senator"] = True
+            data["Representative"] = True
+        else:
+            if memberServed.findChild(name="li").text[0] == "S":
+                data["Senator"] = True
+                data["Representative"] = False
+            else:
+                data["Senator"] = False
+                data["Representative"] = True
 
     return DataFrame(data)
 

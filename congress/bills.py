@@ -38,6 +38,7 @@ def getElements(soup: BeautifulSoup) -> ResultSet:
 def extractBills(dataset: ResultSet, sponsorKey: str) -> DataFrame:
     data: dict = {
         "Bill": [],
+        "Congress Session": [],
         "Sponsor Key": [],
         "Bill URL": [],
         "Cosponsor URL": [],
@@ -49,9 +50,9 @@ def extractBills(dataset: ResultSet, sponsorKey: str) -> DataFrame:
         resultHeading: Tag = tag.findChild(
             name="span", attrs={"class": "result-heading"}
         )
-        memberServed: Tag = tag.findChild(
-            name="ul", attrs={"class": "member-served"}, recursive=True
-        )
+        congressSession: str = int(findall("\d+", resultHeading.text.split('—')[1].strip().split(' ')[0])[0]) # TODO: Make this more concise
+        data["Congress Session"].append(congressSession)
+
         uri: Tag = resultHeading.findChild("a")
         uriHREF: str = uri.get("href")
         data["Bill URL"].append("https://congress.gov" + uriHREF)

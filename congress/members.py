@@ -60,7 +60,7 @@ def extractMembers(dataset: ResultSet) -> DataFrame:
 
         uri: str = resultHeading.findChild("a").get("href")
         data["URL"].append("https://congress.gov" + uri)
-        data["Key"].append(uri.split("/")[-1].split("?")[0]) # TODO: Replace with regex
+        data["Key"].append(uri.split("/")[-1].split("?")[0])  # TODO: Replace with regex
 
         # TODO: Replace with a more concise solution
         if len(memberServed.find_all()) == 2:

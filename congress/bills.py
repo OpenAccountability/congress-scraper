@@ -24,8 +24,8 @@ def getPageCount(soup: BeautifulSoup) -> int:
     pagination: Tag = soup.find(name="div", attrs={"class": "pagination"})
     try:
         pageCountText: str = pagination.findChild(
-        name="span", attrs={"class": "results-number"}
-    ).text
+            name="span", attrs={"class": "results-number"}
+        ).text
     except AttributeError:
         return 0
     return int(findall("\d+", pageCountText)[0])
@@ -33,6 +33,34 @@ def getPageCount(soup: BeautifulSoup) -> int:
 
 def getElements(soup: BeautifulSoup) -> ResultSet:
     return soup.find_all(name="li", attrs={"class": "expanded"})
+
+
+def extractBills(dataset: ResultSet, sponsorKey: str) -> DataFrame:
+    data: dict = {
+        "Bill": [],
+        "Sponsor Key": [],
+        "Bill URL": [],
+        "Cosponsor URL": [],
+    }
+    tag: Tag
+    for tag in dataset:
+        data["Sponsor Key"].append(sponsorKey)
+
+        resultHeading: Tag = tag.findChild(
+            name="span", attrs={"class": "result-heading"}
+        )
+        memberServed: Tag = tag.findChild(
+            name="ul", attrs={"class": "member-served"}, recursive=True
+        )
+        uri: Tag = resultHeading.findChild("a")
+        uriHREF: str = uri.get("href")
+        data["Bill URL"].append("https://congress.gov" + uriHREF)
+        data["Cosponsor URL"].append(
+            "https://congress.gov" + uriHREF.split("?")[0] + "/cosponsor"
+        )  # TODO: Make this more concise
+        data["Bill"].append(uri.text)
+
+    return DataFrame(data)
 
 
 def main() -> None:
@@ -43,22 +71,30 @@ def main() -> None:
 
     memberDF: DataFrame = pandas.read_json(args.input).T
 
-    with Bar("Scraping legislature data from https://congress.gov...", max=memberDF.shape[0]) as bar:
+    with Bar(
+        "Scraping legislature data from https://congress.gov...", max=memberDF.shape[0]
+    ) as bar:
 
         for row in memberDF.itertuples(index=False):
-            url: str = ""
-            if row.Senator and row.Representative:
-                url = searchURL.format(row.Key, row.Key)
-            elif row.Senator:
-                url = searchURL.format("", row.Key)
-            elif row.Representative:
-                url = searchURL.format(row.Key, "")
-            else:
-                url = searchURL.format("", "")
+            url: str = searchURL.format(row.Key, row.Key)
 
             resp: Response = getRequest(url)
             soup: BeautifulSoup = buildSoup(resp)
             pageCount: int = getPageCount(soup)
 
-            print(pageCount)
+            data: ResultSet = getElements(soup)
+            dfList.append(extractBills(dataset=data, sponsorKey=row.Key))
+
             bar.next()
+
+            page: int
+            for page in range(2, pageCount + 1):
+                url = searchURL.format(row.Key, row.Key) + f"&page={page}"
+                resp: Response = getRequest(url)
+                soup: BeautifulSoup = buildSoup(resp)
+                data: ResultSet = getElements(soup)
+                dfList.append(extractBills(dataset=data, sponsorKey=row.Key))
+            bar.next()
+
+    df: DataFrame = pandas.concat(dfList, ignore_index=True)
+    df.T.to_json(args.output)

@@ -6,6 +6,7 @@ import pandas
 from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
 from pandas import DataFrame
+from progress.bar import Bar
 from requests import get
 from requests.models import Response
 
@@ -54,29 +55,33 @@ def main() -> None:
     args: Namespace = memberArgs()
 
     dfList: list = []
-
-    resp: Response = getRequest(
+    url: str = (
         "https://www.congress.gov/search?q={%22source%22:%22members%22}&pageSize=250"
     )
 
-    soup: BeautifulSoup = buildSoup(resp)
+    with Bar("Scraping data from https://congress.gov... ") as bar:
 
-    pageCount: int = getPageCount(soup)
+        resp: Response = getRequest(url)
+        soup: BeautifulSoup = buildSoup(resp)
+        pageCount: int = getPageCount(soup)
 
-    page: int
-    for page in range(1, pageCount + 1):
-        if page == 1:
-            data: ResultSet = getElements(soup)
-            dfList.append(extractMembers(dataset=data))
-        else:
-            resp: Response = getRequest(
-                "https://www.congress.gov/search?q={%22source%22:%22members%22}&pageSize=250&page="
-                + str(page)
-            )
-            soup: BeautifulSoup = buildSoup(resp)
-            data: ResultSet = getElements(soup)
-            dfList.append(extractMembers(dataset=data))
+        bar.max = pageCount
+        bar.update()
 
-    print(dfList)
+        page: int
+        for page in range(1, pageCount + 1):
+            if page == 1:
+                data: ResultSet = getElements(soup)
+                dfList.append(extractMembers(dataset=data))
+            else:
+                url = (
+                    "https://www.congress.gov/search?q={%22source%22:%22members%22}&pageSize=250&page="
+                    + str(page)
+                )
+                resp: Response = getRequest(url)
+                soup: BeautifulSoup = buildSoup(resp)
+                data: ResultSet = getElements(soup)
+                dfList.append(extractMembers(dataset=data))
+            bar.next()
 
     # pandas.concat(dfList).to_json("test.json")

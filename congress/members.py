@@ -36,6 +36,7 @@ def extractMembers(dataset: ResultSet) -> DataFrame:
     data: dict = {
         "Last Name": [],
         "First Name": [],
+        "Key": [],
         "Senator": [],
         "Representative": [],
         "URL": [],
@@ -57,10 +58,11 @@ def extractMembers(dataset: ResultSet) -> DataFrame:
         data["Last Name"].append(splitHeading[1])
         data["First Name"].append(splitHeading[2])
 
-        data["URL"].append(
-            "https://congress.gov" + resultHeading.findChild("a").get("href")
-        )
+        uri: str = resultHeading.findChild("a").get("href")
+        data["URL"].append("https://congress.gov" + uri)
+        data["Key"].append(uri.split("/")[-1].split("?")[0]) # TODO: Replace with regex
 
+        # TODO: Replace with a more concise solution
         if len(memberServed.find_all()) == 2:
             data["Senator"].append(True)
             data["Representative"].append(True)

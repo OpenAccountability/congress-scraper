@@ -32,3 +32,40 @@ def memberArgs() -> Namespace:
     )
 
     return parser.parse_args()
+
+
+def billsArgs() -> Namespace:
+    parser: ArgumentParser = ArgumentParser(
+        prog=f"{name} Bills Scraper",
+        usage="A tool to download the metadata for all Congress Bills listed on https://congress.gov",
+        description="This tool downloads all of the front matter for Congress Bills listed on https://congress.gov",
+        epilog=f"Created by: {', '.join(authors)}",
+    )
+
+    parser.add_argument(
+        "-i",
+        "--input",
+        default="members.json",
+        type=str,
+        required=False,
+        help="File containing member URLs in JSON format. DEFAULT: members.json",
+    )
+
+    parser.add_argument(
+        "-o",
+        "--output",
+        default="bills.json",
+        type=str,
+        required=False,
+        help="Save the output to disk. DEFAULT: bills.json",
+    )
+
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version=f"{version()}",
+        help="Display the version",
+    )
+
+    return parser.parse_args()
